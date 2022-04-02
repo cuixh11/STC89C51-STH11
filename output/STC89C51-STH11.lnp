@@ -1,7 +1,0 @@
-"..\output\STARTUP.obj",
-"..\output\main.obj",
-"..\output\LCD1602.obj",
-"..\output\SHT11.obj",
-"..\output\alarm.obj" 
-TO "..\output\STC89C51-STH11" 
-PRINT(".\STC89C51-STH11.m51") RAMSIZE(256) 
