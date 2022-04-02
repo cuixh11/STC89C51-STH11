@@ -1,0 +1,219 @@
+C51 COMPILER V9.02   SHT11                                                                 04/02/2022 12:21:45 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE SHT11
+OBJECT MODULE PLACED IN ..\output\SHT11.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\src\SHT11.c BROWSE INCDIR(..\inc) DEBUG OBJECTEXTEND PRINT(.\SHT11.lst) 
+                    -OBJECT(..\output\SHT11.obj)
+
+line level    source
+
+   1          /*
+   2          *******************************************************************************
+   3          *ÎÄ ¼þ Ãû£ºSHT11.c
+   4          *Ãè    Êö£ºµÚ¶þ²¿·ÖSHT11ÉèÖÃ
+   5          *  °æ±¾ºÅ£ºv1.0.0  
+   6          ;Î¢´¦ÀíÆ÷: STC89C51
+   7          ;±àÒë»·¾³: Keil uVision V4.10 
+   8          ;×÷    Õß: Cui Xinghai 
+   9          ;´´½¨ÈÕÆÚ: 2022.2.24   
+  10          ; ±¸   ×¢£º
+  11          *******************************************************************************
+  12          */
+  13          #define  _STH11_C
+  14          #include "STH11.h"
+  15          #include <intrins.h> //Ó¦ÓÃÓÚ³ÌÐòÉè¼Æ£¬Ò»°ã³öC51µ¥Æ¬»ú±à³ÌÖÐ£¬Ò»°ã³ÌÐòÖÐÐèÒªÊ¹ÓÃµ½¿ÕÖ¸Áî_nop_();×Ö·ûÑ­»·ÒÆ
+             -Î»Ö¸Áî_crol_µÈÊ±Ê¹ÓÃ¡£
+  16          
+  17             //*********************µÚ¶þ²¿·ÖSHT11ÉèÖÃ   START**************************************** 
+  18          
+  19          /*-------------------------------------- 
+  20          ;Ä£¿éÃû³Æ:s_transstart(); 
+  21          ;¹¦    ÄÜ:Æô¶¯´«Êäº¯Êý
+  22          ;-------------------------------------*/  
+  23          void s_transstart(void) 
+  24          // generates a transmission start (SHT11·¢ËÍÃüÁî£¬Æô¶¯´«ÊäÊ±Ðò£©  
+  25          //       _____         ________ 
+  26          // DATA:      |_______| 
+  27          //           ___     ___ 
+  28          // SCK : ___|   |___|   |______ 
+  29          {   
+  30   1         DATA=1; SCK=0;                   //Initial state 
+  31   1         _nop_(); 
+  32   1         SCK=1; 
+  33   1         _nop_(); 
+  34   1         DATA=0; 
+  35   1         _nop_(); 
+  36   1         SCK=0;   
+  37   1         _nop_();_nop_();_nop_(); 
+  38   1         SCK=1; 
+  39   1         _nop_(); 
+  40   1         DATA=1;        
+  41   1         _nop_(); 
+  42   1         SCK=0;        
+  43   1      } 
+  44          
+  45          /*-------------------------------------- 
+  46          ;Ä£¿éÃû³Æ:s_connectionreset(); 
+  47          ;¹¦    ÄÜ:Á¬½Ó¸´Î»º¯Êý
+  48          ;-------------------------------------*/ 
+  49          void s_connectionreset(void) 
+  50          // Í¨Ñ¶¸´Î»Ê±Ðò£ºÈç¹ûÓë SHT11 Í¨Ñ¶ÖÐ¶Ï£¬ÏÂÁÐÐÅºÅÊ±Ðò¿ÉÒÔ¸´Î»´®¿Ú£ºDATA ±£³Ö¸ßµçÆ½Ê±£¬´¥·¢ SCK Ê±ÖÓ 9 ´Î»ò¸
+             -ü¶à¡£ 
+  51          //       _____________________________________________________         ________ 
+  52          // DATA:                                                      |_______| 
+C51 COMPILER V9.02   SHT11                                                                 04/02/2022 12:21:45 PAGE 2   
+
+  53          //          _    _    _    _    _    _    _    _    _        ___     ___ 
+  54          // SCK : __| |__| |__| |__| |__| |__| |__| |__| |__| |______|   |___|   |______ 
+  55          {   
+  56   1        unsigned char i;  
+  57   1        DATA=1; SCK=0;                    //Initial state 
+  58   1        for(i=0;i<9;i++)                  //9 SCK cycles,DATA±£³Ö¸ß£¬SCKÊ±ÖÓ´¥·¢9´Î£¬·¢ËÍÆô¶¯´«Êä£¬Í¨Ñ¸¼´¸´Î» 
+  59   1        { 
+  60   2          SCK=1;
+  61   2          SCK=0; 
+  62   2        } 
+  63   1        s_transstart();                   //transmission start 
+  64   1      } 
+  65          
+  66          
+  67          /*-------------------------------------- 
+  68          ;Ä£¿éÃû³Æ:s_write_byte(); 
+  69          ;¹¦    ÄÜ:SHT11Ð´º¯Êý                                           
+  70          ;-------------------------------------*/ 
+  71          char s_write_byte(unsigned char value) 
+  72          // Ð´ÈëÒ»¸ö×Ö½Ú£¬²¢¼ì²éÈ·ÈÏ 
+  73          {  
+  74   1        unsigned char i,error=0;
+  75   1           
+  76   1        for (i=0x80;i>0;i/=2)             //0x1000 0000ÓÃÓÚÑÚÂëµÄÒÆÎ»,¸ßÎ»Îª1£¬Ñ­»·ÓÒÒÆ https://zhidao.baidu.com
+             -/question/2144112204880805988.html 
+  77   1        {  
+  78   2          if (i & value) DATA=1;          //ºÍÒª·¢ËÍµÄÊýÏàÓë£¬½á¹ûÎª·¢ËÍµÄÎ»
+  79   2                    else DATA=0;                         
+  80   2          SCK=1;                           
+  81   2          _nop_();_nop_();_nop_();             
+  82   2          SCK=0; 
+  83   2        } 
+  84   1      
+  85   1        DATA=1;                           //ÊÍ·ÅÊý¾ÝÏß
+  86   1        SCK=1;                            //clk #9 for ack  
+  87   1        error=DATA;                       //¼ì²éÓ¦´ðÐÅºÅ£¬È·ÈÏÍ¨Ñ¶Õý³£  
+  88   1        _nop_();_nop_();_nop_();
+  89   1        SCK=0;
+  90   1        DATA=1;                           // 
+  91   1        return error;                     //error=1 in case of no acknowledge //·µ»Ø£º0³É¹¦£¬1Ê§°Ü
+  92   1      }                       
+  93           
+  94          
+  95          /*-------------------------------------- 
+  96          ;Ä£¿éÃû³Æ:s_read_byte(); 
+  97          ;¹¦    ÄÜ:SHT11¶Áº¯Êý
+  98          ;-------------------------------------*/ 
+  99          char s_read_byte(unsigned char ack)   
+ 100          {  
+ 101   1        unsigned char i,val=0; 
+ 102   1        DATA=1;                           //ÊÍ·ÅÊý¾ÝÏß 
+ 103   1        for (i=0x80;i>0;i/=2)              
+ 104   1        { 
+ 105   2          SCK=1;                          //clk for SENSI-BUS 
+ 106   2          if (DATA) val=(val | i);        //¶ÁÒ»Î»Êý¾ÝÏßµÄÖµ    
+ 107   2              _nop_();_nop_();_nop_();        //pulswith approx. 3 us
+ 108   2          SCK=0;              
+ 109   2        } 
+ 110   1        if(ack==1)DATA=0;                 //in case of "ack==1" pull down DATA-Line 
+ 111   1        else DATA=1;                      //Èç¹ûÊÇÐ£Ñé(ack==0)£¬¶ÁÈ¡Íêºó½áÊøÍ¨Ñ¶
+ 112   1        _nop_();_nop_();_nop_();          //pulswith approx. 3 us 
+ 113   1        SCK=1;                            //clk #9 for ack 
+C51 COMPILER V9.02   SHT11                                                                 04/02/2022 12:21:45 PAGE 3   
+
+ 114   1        _nop_();_nop_();_nop_();          //pulswith approx. 3 us  
+ 115   1        SCK=0;                 
+ 116   1        _nop_();_nop_();_nop_();          //pulswith approx. 3 us 
+ 117   1        DATA=1;                           //release DATA-line 
+ 118   1        return val; 
+ 119   1      } 
+ 120           
+ 121          
+ 122           
+ 123          
+ 124          /*-------------------------------------- 
+ 125          ;Ä£¿éÃû³Æ:s_measure(); 
+ 126          ;¹¦    ÄÜ:²âÁ¿ÎÂÊª¶Èº¯Êý
+ 127          ;-------------------------------------*/ 
+ 128          char s_measure(unsigned char *p_value, unsigned char *p_checksum, unsigned char mode) 
+ 129          // ½øÐÐÎÂ¶È»òÕßÊª¶È×ª»»£¬ÓÉ²ÎÊýmode¾ö¶¨×ª»»ÄÚÈÝ 
+ 130          {  
+ 131   1        unsigned error=0; 
+ 132   1        unsigned int i; 
+ 133   1       
+ 134   1        s_transstart();                   //transmission start 
+ 135   1      
+ 136   1        switch(mode){                     //Ñ¡Ôñ·¢ËÍÃüÁî 
+ 137   2          case TEMP  : error+=s_write_byte(MEASURE_TEMP); break; 
+ 138   2          case HUMI  : error+=s_write_byte(MEASURE_HUMI); break; 
+ 139   2          default     : break;    
+ 140   2        } 
+ 141   1        for (i=0;i<65535;i++) if(DATA==0) break; //µÈ´ý²âÁ¿½áÊø
+ 142   1        if(DATA) error+=1;                // Èç¹û³¤Ê±¼äÊý¾ÝÏßÃ»ÓÐÀ­µÍ£¬ËµÃ÷²âÁ¿´íÎó
+ 143   1        *(p_value)  =s_read_byte(ACK);    //¶ÁµÚÒ»¸ö×Ö½Ú£¬¸ß×Ö½Ú (MSB) 
+ 144   1        *(p_value+1)=s_read_byte(ACK);    //¶ÁµÚ¶þ¸ö×Ö½Ú£¬µÍ×Ö½Ú (LSB)
+ 145   1        *p_checksum =s_read_byte(noACK);  //read checksum 
+ 146   1         return error; 
+ 147   1      } 
+ 148           
+ 149          
+ 150          /*-------------------------------------- 
+ 151          ;Ä£¿éÃû³Æ:calc_SHT11(); 
+ 152          ;¹¦    ÄÜ:ÎÂÊª¶È²¹³¥º¯Êý
+ 153          ;±¸    ×¢£ºSHT11Êª¶È²âÁ¿·¶Î§£º0¡«100%RH£»ÎÂ¶È²âÁ¿·¶Î§£º-40¡«+123.8¡æ
+ 154          ;-------------------------------------*/ 
+ 155          void calc_SHT11(float *p_humidity ,float *p_temperature)
+ 156          // calculates temperature [C] and humidity [%RH] 
+ 157          // input :  humi [Ticks] (12 bit) 
+ 158          //          temp [Ticks] (14 bit)
+ 159          // output:  humi [%RH]
+ 160          //          temp [C]
+ 161                                              //const±íÊ¾³£Á¿£¬²»ÔÊÐíÐÞ¸ÄÀïÃæµÄÄÚÈÝ
+ 162          { const float C1=-4.0;              // 12Î»Êª¶È¾«¶È ÐÞÕý¹«Ê½
+ 163   1        const float C2=+0.0405;           // 12Î»Êª¶È¾«¶È ÐÞÕý¹«Ê½
+ 164   1        const float C3=-0.0000028;        // 12Î»Êª¶È¾«¶È ÐÞÕý¹«Ê½
+ 165   1        const float T1=+0.01;             // 14Î»ÎÂ¶È¾«¶È 5VÌõ¼þ  ÐÞÕý¹«Ê½
+ 166   1        const float T2=+0.00008;          // 14Î»ÎÂ¶È¾«¶È 5VÌõ¼þ  ÐÞÕý¹«Ê½
+ 167   1      
+ 168   1        float rh=*p_humidity;             // rh:      Humidity [Ticks] 12 Bit 
+ 169   1        float t=*p_temperature;           // t:       Temperature [Ticks] 14 Bit
+ 170   1        float rh_lin;                     // rh_lin:  Humidity linear
+ 171   1        float rh_true;                    // rh_true: Temperature compensated humidity
+ 172   1        float t_C;                        // t_C   :  Temperature [C]
+ 173   1      
+ 174   1        t_C=t*0.01 - 40;                  //²¹³¥ÎÂ¶È£¬14Î»ÎÂ¶È¾«¶È 5VÌõ¼þ  ÐÞÕý¹«Ê½
+ 175   1        
+C51 COMPILER V9.02   SHT11                                                                 04/02/2022 12:21:45 PAGE 4   
+
+ 176   1        rh_lin=C3*rh*rh + C2*rh + C1;     //Ïà¶ÔÊª¶È·ÇÏßÐÔ²¹³¥
+ 177   1        rh_true=(t_C-25)*(T1+T2*rh)+rh_lin-3;   //Ïà¶ÔÊª¶È¶ÔÓÚÎÂ¶ÈÒÀÀµÐÔ²¹³¥
+ 178   1      
+ 179   1        if(rh_true>100)rh_true=100;       //Êª¶È×î´óÐÞÕý
+ 180   1        if(rh_true<0.1)rh_true=0.1;       //Êª¶È×îÐ¡ÐÞÕý
+ 181   1      
+ 182   1        *p_temperature=t_C;               //·µ»ØÎÂ¶È½á¹û
+ 183   1        *p_humidity=rh_true;              //·µ»ØÊª¶È½á¹û
+ 184   1      }
+ 185          //*********************µÚ¶þ²¿·ÖSTH11ÉèÖÃ   END****************************************
+ 186          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    699    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      55
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

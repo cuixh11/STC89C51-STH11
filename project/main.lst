@@ -1,0 +1,145 @@
+C51 COMPILER V9.02   MAIN                                                                  04/02/2022 12:21:45 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN ..\output\main.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\src\main.c BROWSE INCDIR(..\inc) DEBUG OBJECTEXTEND PRINT(.\main.lst) OB
+                    -JECT(..\output\main.obj)
+
+line level    source
+
+   1          /*********************************************************************************** 
+   2          ;¹¦ÄÜËµÃ÷:SHT11ºÍSTC89C51ÎÂÊª¶È²É¼¯ºÍ²âÁ¿ÏµÍ³µÄProteus·ÂÕæ
+   3          ;ÎÄ¼þÃû³Æ:DU.c     
+   4          ;°æ±¾ºÅ£ºv1.0.0  
+   5          ;Î¢´¦ÀíÆ÷:STC89C51
+   6          ;±àÒë»·¾³:Keil uVision V4.10 
+   7          ;×÷    Õß:Cui Xinghai 
+   8          ;´´½¨ÈÕÆÚ:2022.2.24   
+   9          ;***********************************************************************************/
+  10          
+  11          /*************¶¨Òå½Ó¿Ú********************
+  12                   P0------DB0¡«DB7  (LCD1602)     
+  13                   P2.0------RS      (LCD1602)
+  14                   P2.1------RW      (LCD1602)
+  15                   P2.2------E       (LCD1602)
+  16          
+  17                           P2.6------SCK     (STH11)
+  18                           P2.7------DATA    (STH11)
+  19          
+  20                           P1.5------SET     //¶¨Òåµ÷Õû¼ü
+  21                           P1.6------ADD     //¶¨ÒåÔö¼Ó¼ü
+  22                           P1.7------DEC     //¶¨Òå¼õÉÙ¼ü
+  23                   P3.7------ESC     //¶¨ÒåÍË³ö¼ü
+  24                           P1.4------BEEP    //¶¨Òå·äÃùÆ÷
+  25          
+  26                           P1.0------t_green                   //ÎÂ¶È¹ýµÍµÆ
+  27                           P1.1------t_red                     //ÎÂ¶È¹ý¸ßµÆ
+  28                           P1.2------rh_green                  //Êª¶È¹ýµÍµÆ
+  29                           P1.3------rh_red                    //Êª¶È¹ý¸ßµÆ
+  30          *****************************************/
+  31          
+  32          #include <reg52.h>       
+  33          #include <math.h>    //Keil library   
+  34          #include <stdio.h>   //Keil library 
+  35          
+  36          #include "LCD1602.h"
+  37          #include "STH11.h"
+  38          #include "alarm.h"
+  39          //#include "main.h"      //ÓÃ²»µ½£¬main¾ÍÒ»¸öº¯Êý
+  40          
+  41          extern unsigned char flag;
+  42          
+  43          
+  44          //*********Ö÷º¯Êý*****************
+  45          void main(void)
+  46          {
+  47   1             value humi_val,temp_val;                              //¶¨ÒåÁ½¸ö¹²Í¬Ìå£¬Ò»¸öÓÃÓÚÊª¶È£¬Ò»¸öÓÃÓÚÎÂ¶È
+  48   1             unsigned char error,checksum;                     //ÓÃÓÚ¼ìÑéÊÇ·ñ³öÏÖ´íÎó
+  49   1             unsigned int wendu,shidu;                                 //×îÖÕ,´øÒ»Î»Ð¡ÊýµÄÎÂÊª¶ÈµÄÖµ
+  50   1                 
+  51   1                 LCD_init();  
+  52   1             s_connectionreset();
+  53   1       
+  54   1      //*********³õÊ¼»¯ÎÂ¶ÈÏÔÊ¾Çø*********
+C51 COMPILER V9.02   MAIN                                                                  04/02/2022 12:21:45 PAGE 2   
+
+  55   1             LCD_disp_str(0,1,"TE:");
+  56   1             LCD_disp_str(3,1,"TTT.TC");
+  57   1      
+  58   1      //*********³õÊ¼»¯Êª¶ÈÏÔÊ¾Çø*********
+  59   1             LCD_disp_str(0,2,"RH:");
+  60   1                 LCD_disp_str(3,2,"RRR.R%");
+  61   1             delay_n10us(2000);     //ÑÓÊ±0.2s
+  62   1      
+  63   1        while(1) 
+  64   1              {
+  65   2                        LCD_disp_char(13,1,flag+'0');
+  66   2      
+  67   2                key();
+  68   2           
+  69   2               if(flag==0)
+  70   2                {
+  71   3                 error=0;                                                                              //³õÊ¼»¯error=0£¬¼´Ã»ÓÐ´íÎó
+  72   3                 error+=s_measure((unsigned char*) &humi_val.i,&checksum,HUMI);  //measure humidity 
+  73   3                 error+=s_measure((unsigned char*) &temp_val.i,&checksum,TEMP);  //measure temperature 
+  74   3                 if(error!=0) s_connectionreset();                 //in case of an error: connection reset 
+  75   3                 else 
+  76   3                  { 
+  77   4                   humi_val.f=(float)humi_val.i;                   //converts integer to float
+  78   4                   temp_val.f=(float)temp_val.i;                   //converts integer to float
+  79   4                   calc_SHT11(&humi_val.f,&temp_val.f);            //calculate humidity, temperature
+  80   4                                     
+  81   4                   LCD_disp_str(0,1,"TE:");
+  82   4                   LCD_disp_str(0,2,"RH:");
+  83   4                   LCD_disp_str(6,1,".");
+  84   4                   LCD_disp_str(6,2,".");
+  85   4                   LCD_disp_str(8,1,"C   ");
+  86   4                   LCD_disp_str(8,2,"%   ");
+  87   4      
+  88   4                           wendu=10*temp_val.f;                            //ÀýÈçÎÂ¶È109.1¡ú1091
+  89   4                               
+  90   4                               if(10*temp_val.f<0) {LCD_disp_str(12,2,"nega");}//ÊµÊ±ÎÂ¶ÈÎª¸ºÊýÊ±£¬ÏÔÊ¾ÌáÊ¾·ûnega     
+  91   4                           else {LCD_disp_str(12,2,"    ");}                   //ÊµÊ±ÎÂ¶ÈÎªÕýÊýÊ±£¬È¥³ý¸ºÊýÌáÐÑnega
+  92   4                               
+  93   4                               LCD_disp_char(3,1,abs(wendu)/1000+'0');         //ÏÔÊ¾ÎÂ¶È°ÙÎ»,¼Ó¡°0¡±ÊÇÎªÁË½«×Ö·ûµÄASCIIÂë´óÓÚ48£¨¼´×
+             -Ö·û0µÄASCIIÖµ£©£¬Ò»°ãÊÇ½«Êý×Ö0,1,2¡­¡­£¬9×ª»»Îª×Ö·û¡°0¡±£¬¡°1¡±¡­¡­£¬¡°9¡±£»                   
+  94   4                               LCD_disp_char(4,1,abs(wendu)%1000/100+'0');     //ÏÔÊ¾ÎÂ¶ÈÊ®Î»
+  95   4                   LCD_disp_char(5,1,abs(wendu)%100/10+'0');       //ÏÔÊ¾ÎÂ¶È¸öÎ»
+  96   4                           LCD_disp_char(7,1,abs(wendu)%10+'0');           //ÏÔÊ¾ÎÂ¶ÈÐ¡ÊýµãºóµÚÒ»Î»
+  97   4      
+  98   4                               shidu=10*humi_val.f;
+  99   4                               LCD_disp_char(3,2,shidu/1000+'0');               //ÏÔÊ¾Êª¶È°ÙÎ»
+ 100   4                   LCD_disp_char(4,2,(shidu%1000)/100+'0');         //ÏÔÊ¾Êª¶ÈÊ®Î»
+ 101   4                   LCD_disp_char(5,2,(shidu%100)/10+'0');           //ÏÔÊ¾Êª¶È¸öÎ»
+ 102   4                               LCD_disp_char(7,2,(shidu%10)+'0');               //ÏÔÊ¾Êª¶ÈÐ¡ÊýµãºóµÚÒ»Î»
+ 103   4                
+ 104   4                   led_control(&temp_val.f,&humi_val.f);
+ 105   4      
+ 106   4                 } 
+ 107   3                //----------wait approx. 0.8s to avoid heating up SHT11------------------------------       
+ 108   3                        delay_n10us(800);                                //ÑÓÊ±Ô¼0.8s       
+ 109   3                        }
+ 110   2      
+ 111   2            
+ 112   2       
+ 113   2            }
+ 114   1      }
+ 115          
+C51 COMPILER V9.02   MAIN                                                                  04/02/2022 12:21:45 PAGE 3   
+
+ 116          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    634    ----
+   CONSTANT SIZE    =     44    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      14
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
