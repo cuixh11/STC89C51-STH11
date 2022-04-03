@@ -85,12 +85,12 @@ void main(void)
              LCD_disp_str(8,1,"C   ");
              LCD_disp_str(8,2,"%   ");
 
-		     wendu=10*temp_val.f;                            //例如温度109.1→1091
+		     wendu=10.0*temp_val.f;                            //例如温度109.1→1091
 			 
-			 if(10*temp_val.f<0) {LCD_disp_str(12,2,"nega");}//实时温度为负数时，显示提示符nega	
-		     else {LCD_disp_str(12,2,"    ");}		         //实时温度为正数时，去除负数提醒nega
+			 if(10*temp_val.f<0) {LCD_disp_char(3,1,'-');}
+		     else {LCD_disp_char(3,1,abs(wendu)/1000+'0');}		         
 			 
-			 LCD_disp_char(3,1,abs(wendu)/1000+'0');         //显示温度百位,加“0”是为了将字符的ASCII码大于48（即字符0的ASCII值），一般是将数字0,1,2……，9转换为字符“0”，“1”……，“9”；			 
+			// LCD_disp_char(3,1,abs(wendu)/1000+'0');         //显示温度百位,加“0”是为了将字符的ASCII码大于48（即字符0的ASCII值），一般是将数字0,1,2……，9转换为字符“0”，“1”……，“9”；			 
 			 LCD_disp_char(4,1,abs(wendu)%1000/100+'0');     //显示温度十位
              LCD_disp_char(5,1,abs(wendu)%100/10+'0');       //显示温度个位
 		     LCD_disp_char(7,1,abs(wendu)%10+'0');           //显示温度小数点后第一位

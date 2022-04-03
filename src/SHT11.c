@@ -73,17 +73,18 @@ char s_write_byte(unsigned char value)
 {  
   unsigned char i,error=0;
      
-  for (i=0x80;i>0;i/=2)             //0x1000 0000用于掩码的移位,高位为1，循环右移 https://zhidao.baidu.com/question/2144112204880805988.html 
+  for (i=0x80;i>0;i/=2)             //0x1000 0000用于掩码的移位,高位为1，循环右移 
   {  
-    if (i & value) DATA=1;          //和要发送的数相与，结果为发送的位
-              else DATA=0;                         
-    SCK=1;                           
+    if (i & value) DATA=1;          //1000 0000（1循环右移） & 1010 1111 ，TATA发送一位
+              else DATA=0;                             
+	SCK=1;                           
     _nop_();_nop_();_nop_();             
     SCK=0; 
   } 
 
   DATA=1;                           //释放数据线
-  SCK=1;                            //clk #9 for ack  
+  SCK=1;                            //clk #9 for ack 
+   
   error=DATA;                       //检查应答信号，确认通讯正常  
   _nop_();_nop_();_nop_();
   SCK=0;
@@ -99,14 +100,16 @@ char s_write_byte(unsigned char value)
 char s_read_byte(unsigned char ack)   
 {  
   unsigned char i,val=0; 
-  DATA=1;                           //释放数据线 
-  for (i=0x80;i>0;i/=2)              
+  DATA=1;                           //释放数据线，不使能SHT11 
+
+  for (i=0x80;i>0;i/=2)             //0x1000 0000，相当于1右移
   { 
     SCK=1;                          //clk for SENSI-BUS 
-    if (DATA) val=(val | i);        //读一位数据线的值    
+    if (DATA) val=(val | i);        //DATA高，保留一位数据的值,0000 0000 & 1000 0000    
 	_nop_();_nop_();_nop_();        //pulswith approx. 3 us
     SCK=0;              
   } 
+
   if(ack==1)DATA=0;                 //in case of "ack==1" pull down DATA-Line 
   else DATA=1;                      //如果是校验(ack==0)，读取完后结束通讯
   _nop_();_nop_();_nop_();          //pulswith approx. 3 us 
