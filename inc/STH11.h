@@ -20,11 +20,11 @@ sbit DATA = P2^7;      //定义通讯数据端口
 
 typedef union  		   //定义了两个共用体:如果没有typedef那么就是普通的定义了匿名联合的一个变量value.加了typedef后, 定义的就是类型别名, 当类型一样用
 { 
-unsigned int i;        //i表示测量得到的温湿度数据（int 形式保存的数据）
-  float f; 			   //f表示测量得到的温湿度数据（float 形式保存的数据）
+int i;      		   //i表示测量得到的温湿度数据（int 形式保存的数据）
+float f; 			   //f表示测量得到的温湿度数据（float 形式保存的数据）
 } value; 
 
-enum {TEMP,HUMI};      //enum　枚举名　{枚举元素1,枚举元素2,……};TEMP=0,HUMI=1	枚举：https://www.runoob.com/cprogramming/c-enum.html
+enum {TEMP,HUMI};      //enum　枚举名　{枚举元素1,枚举元素2,……};TEMP=0,HUMI=1
  
 
 #define noACK        0      //用于判断是否结束通讯

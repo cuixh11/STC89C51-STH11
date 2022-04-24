@@ -27,7 +27,7 @@ sbit         LCD_E =P2^2;
 void LCD_init(void);                           //初始化函数
 void LCD_write_command(uchar command);         //写指令函数
 void LCD_write_data(uchar dat);                //写数据函数
-void LCD_disp_char(uchar x,uchar y,uchar dat); //在某个屏幕位置上显示一个字符,X（0-15),y(1-2)
+void LCD_disp_char(uchar x,uchar y,uchar dat); //在某个屏幕位置上显示一个字符
 void LCD_disp_str(uchar x,uchar y,uchar *str); //LCD1602显示字符串函数
 void delay_n10us(uint n);                      //延时函数
 

@@ -23,6 +23,10 @@ sbit DEC = 	P1^7;                   //定义减少键
 sbit ESC =  P3^7;                   //定义调整键
 sbit BEEP=  P1^4;                   //定义蜂鸣器
 
+sbit  t_green   =  P1^0;
+sbit  t_red     =  P1^1;
+sbit  rh_green  =  P1^2;
+sbit  rh_red    =  P1^3;
 /****************定义函数****************/
 void led_control( float *WENDU,  float *SHIDU);
 void key(void);

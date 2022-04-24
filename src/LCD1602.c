@@ -25,13 +25,13 @@
 void LCD_init(void)		//括号中的void意思该函数的参数为空
 {
 delay_n10us(10);
-LCD_write_command(0x38);//指令6：工作方式设置指令，0x0011 1000设置8位格式数据接口，16*2行显示，5x7点阵
+LCD_write_command(0x38);//指令5：工作方式设置指令，0b0011 1000设置8位格式数据接口，16*2行显示，5x7点阵
 delay_n10us(10);
 LCD_write_command(0x0c);//指令4:
-						//整体显示，关光标，不闪烁，BCD0x00001 100
-						//整体显示，开光标，  闪烁，BCD0x00001 111
+						//整体显示，关光标，不闪烁，BCD:0b00001 100	 0x0c
+						//整体显示，开光标，  闪烁，BCD:0b00001 111
 delay_n10us(10);
-LCD_write_command(0x06);//指令3：设定输入方式增量不移位,    0x00000110
+LCD_write_command(0x06);//指令3：设定输入方式增量不移位,0b0000 0110
 delay_n10us(10);
 LCD_write_command(0x01);//指令1：清除屏幕显示,光标复位到地址00H位置
 delay_n10us(100);       //延时清屏，延时函数，延时约n个10us
@@ -51,7 +51,7 @@ LCD_RS=0;         //指令
 LCD_RW=0;         //写入
 LCD_E=1;          //允许
 LCD_DB=dat;
-delay_n10us(10);  //实践证明，我的LCD1602上，用for循环1次就能完成普通写指令。
+delay_n10us(10);  //实践证明，LCD1602上，用for循环1次就能完成普通写指令。
 LCD_E=0;		  //读完撤销使能，防止液晶输出数据干扰 P0 总线 
 delay_n10us(10);  //实践证明，LCD1602上，用for循环1次就能完成普通写指令。
 }
@@ -79,7 +79,7 @@ delay_n10us(10);
 /*-------------------------------------- 
 ;模块名称:LCD_disp_char(); 
 ;功    能:光标位置，LCD1602显示一个字符函数，在某个屏幕位置上显示一个字符,X（0-15),y(1-2)。
-;参数说明:X为1602的列值(取值范围是0-15),y为1602的行值(取值范围是1-2)，dat为所要显示字符对应的地址参数。
+;参数说明:X为1602的列值(取值范围是0-15),y为1602的行值(取值范围是1-2)，address为所要显示字符对应的地址。
 ;-------------------------------------*/
 void LCD_disp_char(uchar x,uchar y,uchar dat)
 {
@@ -106,8 +106,8 @@ void LCD_disp_str(uchar x,uchar y,uchar *str)
          address=0x80+x;
   else
          address=0xc0+x;
-  LCD_write_command(address);  //连续写入字符串数据，直到检测到结束符
-  while(*str!='\0')
+  LCD_write_command(address);  
+  while(*str!='\0')			   //连续写入字符串数据，直到检测到结束符
   { 
     LCD_write_data(*str);      //另外一种写法LCD_write_data(*str++)这行语句中对指针 str 的操作大家一定要理解透彻，先把 str指向的数据取出来用，然后 str 再加 1 以指向下一个数据，这是非常常用的一种简写方式
     str++;

@@ -19,10 +19,6 @@
 #include <math.h>    //Keil library   
 
 //*********************第三部分报警设置   START****************************************
-sbit  t_green   =  P1^0;
-sbit  t_red     =  P1^1;
-sbit  rh_green  =  P1^2;
-sbit  rh_red    =  P1^3;
 
 int t_shangxian = 20;            //上限报警温度，默认值为 20C
 int t_xiaxian   = 10;            //下限报警温度，默认值为 10C
@@ -33,7 +29,7 @@ unsigned char flag=0;
 
 /*-------------------------------------- 
 ;模块名称:led_control(); 
-;功    能:LED状态控制
+;功    能:LED和蜂鸣器状态控制
 ;-------------------------------------*/ 
 void led_control( float *WENDU,  float *SHIDU)                   
 {
@@ -70,12 +66,12 @@ void key()
 /****************设置键设置****************/
  if(SET == 0)
   {
-    delay(50);               //按键消抖
+    delay(10);               //按键消抖
     if(SET == 0)
      {
       flag++;
       if (flag==5)flag = 0;  //没有发生抖动
-	  while(SET==0);         //若一直按下，循环
+	  while(SET==0);         //若一直按下，循环， 加上此句必须松按键才处理
 
     LCD_init(); 
     s_connectionreset();     
@@ -134,8 +130,11 @@ void key()
 	   }
        //温度上限显示
 		LCD_disp_char(7,1,t_shangxian/100+'0');
-	    LCD_disp_char(8,1,(t_shangxian%100)/10+'0');          
-	    LCD_disp_char(9,1,(t_shangxian%10)+'0');       
+	    LCD_disp_char(8,1,abs(t_shangxian%100)/10+'0');          
+	    LCD_disp_char(9,1,abs(t_shangxian%10)+'0');   
+		if(t_shangxian<0)  {LCD_disp_str(12,2,"nega");}	      //温度上限为负数，显示nega
+	 	else 			   {LCD_disp_str(12,2,"    ");}		  //去除负数提醒nega
+    
 	  }
 
 /****************湿度下限设置****************/

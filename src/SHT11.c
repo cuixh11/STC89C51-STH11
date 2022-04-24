@@ -73,9 +73,9 @@ char s_write_byte(unsigned char value)
 {  
   unsigned char i,error=0;
      
-  for (i=0x80;i>0;i/=2)             //0x1000 0000用于掩码的移位,高位为1，循环右移 
+  for (i=0x80;i>0;i/=2)             //0b1000 0000用于掩码的移位,高位为1，循环右移 
   {  
-    if (i & value) DATA=1;          //1000 0000（1循环右移） & 1010 1111 ，TATA发送一位
+    if (i & value) DATA=1;          //举例0b1000 0000（1循环右移） & 1010 1111 ，DATA发送一位
               else DATA=0;                             
 	SCK=1;                           
     _nop_();_nop_();_nop_();             
@@ -102,7 +102,7 @@ char s_read_byte(unsigned char ack)
   unsigned char i,val=0; 
   DATA=1;                           //释放数据线，不使能SHT11 
 
-  for (i=0x80;i>0;i/=2)             //0x1000 0000，相当于1右移
+  for (i=0x80;i>0;i/=2)             //0b1000 0000，相当于1右移,只读了8位数据
   { 
     SCK=1;                          //clk for SENSI-BUS 
     if (DATA) val=(val | i);        //DATA高，保留一位数据的值,0000 0000 & 1000 0000    
@@ -131,7 +131,7 @@ char s_read_byte(unsigned char ack)
 char s_measure(unsigned char *p_value, unsigned char *p_checksum, unsigned char mode) 
 // 进行温度或者湿度转换，由参数mode决定转换内容 
 {  
-  unsigned error=0; 
+  unsigned char error=0; 
   unsigned int i; 
  
   s_transstart();                   //transmission start 
